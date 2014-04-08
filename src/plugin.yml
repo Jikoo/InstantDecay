@@ -1,0 +1,14 @@
+name: InstantDecay
+description: Leaves decay instantly
+version: 1.3
+author: Digi
+main: digi.instantDecay.InstantDecay
+
+commands:
+  instantdecay:
+    description: Control command for InstantDecay
+    permission: instantdecay.admin
+
+permissions:
+  instantdecay.admin:
+    default: op
