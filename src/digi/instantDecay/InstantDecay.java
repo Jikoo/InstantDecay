@@ -75,7 +75,7 @@ public class InstantDecay extends JavaPlugin implements Listener {
 	public void blockBreakEvent(BlockBreakEvent event) {
 		Block block = event.getBlock();
 
-		if (block.getType() != Material.LOG) {
+		if (block.getType() != Material.LOG && block.getType() != Material.LOG_2) {
 			return;
 		}
 
@@ -97,7 +97,8 @@ public class InstantDecay extends JavaPlugin implements Listener {
 				for (int offX = -range; offX <= range; offX++) {
 					for (int offY = -range; offY <= range; offY++) {
 						for (int offZ = -range; offZ <= range; offZ++) {
-							if (world.getBlockTypeIdAt(x + offX, y + offY, z + offZ) == Material.LEAVES.getId()) {
+							Material m = world.getBlockAt(x + offX, y + offY, z + offZ).getType();
+							if (m == Material.LEAVES || m == Material.LEAVES_2) {
 								breakLeaf(world, x + offX, y + offY, z + offZ);
 							}
 						}
@@ -109,6 +110,7 @@ public class InstantDecay extends JavaPlugin implements Listener {
 
 	private void breakLeaf(World world, int x, int y, int z) {
 		Block block = world.getBlockAt(x, y, z);
+		@SuppressWarnings("deprecation")
 		byte data = block.getData();
 
 		if ((data & 4) == 4) {
@@ -126,39 +128,40 @@ public class InstantDecay extends JavaPlugin implements Listener {
 			int offX;
 			int offY;
 			int offZ;
-			int type;
+			Material type;
 
 			for (offX = -range; offX <= range; offX++) {
 				for (offY = -range; offY <= range; offY++) {
 					for (offZ = -range; offZ <= range; offZ++) {
-						type = world.getBlockTypeIdAt(x + offX, y + offY, z + offZ);
-						blocks[(offX + div) * mul + (offY + div) * max + offZ + div] = (type == 17 ? 0 : (type == 18 ? -2 : -1));
+						type = world.getBlockAt(x + offX, y + offY, z + offZ).getType();
+						blocks[(offX + div) * mul + (offY + div) * max + offZ + div] = (type == Material.LOG || type == Material.LOG_2 ? 0 : (type == Material.LEAVES || type == Material.LEAVES_2 ? -2 : -1));
 					}
 				}
 			}
 
+			int type1;
 			for (offX = 1; offX <= 4; offX++) {
 				for (offY = -range; offY <= range; offY++) {
 					for (offZ = -range; offZ <= range; offZ++) {
-						for (type = -range; type <= range; type++) {
-							if (blocks[(offY + div) * mul + (offZ + div) * max + type + div] == offX - 1) {
-								if (blocks[(offY + div - 1) * mul + (offZ + div) * max + type + div] == -2)
-									blocks[(offY + div - 1) * mul + (offZ + div) * max + type + div] = offX;
+						for (type1 = -range; type1 <= range; type1++) {
+							if (blocks[(offY + div) * mul + (offZ + div) * max + type1 + div] == offX - 1) {
+								if (blocks[(offY + div - 1) * mul + (offZ + div) * max + type1 + div] == -2)
+									blocks[(offY + div - 1) * mul + (offZ + div) * max + type1 + div] = offX;
 
-								if (blocks[(offY + div + 1) * mul + (offZ + div) * max + type + div] == -2)
-									blocks[(offY + div + 1) * mul + (offZ + div) * max + type + div] = offX;
+								if (blocks[(offY + div + 1) * mul + (offZ + div) * max + type1 + div] == -2)
+									blocks[(offY + div + 1) * mul + (offZ + div) * max + type1 + div] = offX;
 
-								if (blocks[(offY + div) * mul + (offZ + div - 1) * max + type + div] == -2)
-									blocks[(offY + div) * mul + (offZ + div - 1) * max + type + div] = offX;
+								if (blocks[(offY + div) * mul + (offZ + div - 1) * max + type1 + div] == -2)
+									blocks[(offY + div) * mul + (offZ + div - 1) * max + type1 + div] = offX;
 
-								if (blocks[(offY + div) * mul + (offZ + div + 1) * max + type + div] == -2)
-									blocks[(offY + div) * mul + (offZ + div + 1) * max + type + div] = offX;
+								if (blocks[(offY + div) * mul + (offZ + div + 1) * max + type1 + div] == -2)
+									blocks[(offY + div) * mul + (offZ + div + 1) * max + type1 + div] = offX;
 
-								if (blocks[(offY + div) * mul + (offZ + div) * max + (type + div - 1)] == -2)
-									blocks[(offY + div) * mul + (offZ + div) * max + (type + div - 1)] = offX;
+								if (blocks[(offY + div) * mul + (offZ + div) * max + (type1 + div - 1)] == -2)
+									blocks[(offY + div) * mul + (offZ + div) * max + (type1 + div - 1)] = offX;
 
-								if (blocks[(offY + div) * mul + (offZ + div) * max + type + div + 1] == -2)
-									blocks[(offY + div) * mul + (offZ + div) * max + type + div + 1] = offX;
+								if (blocks[(offY + div) * mul + (offZ + div) * max + type1 + div + 1] == -2)
+									blocks[(offY + div) * mul + (offZ + div) * max + type1 + div + 1] = offX;
 							}
 						}
 					}
@@ -177,7 +180,7 @@ public class InstantDecay extends JavaPlugin implements Listener {
 			block.breakNaturally();
 
 			if (10 > rand.nextInt(100)) {
-				world.playEffect(block.getLocation(), Effect.STEP_SOUND, Material.LEAVES.getId());
+				world.playEffect(block.getLocation(), Effect.STEP_SOUND, Material.LEAVES);
 			}
 		}
 	}
