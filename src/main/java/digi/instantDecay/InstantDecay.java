@@ -4,7 +4,6 @@ import java.util.Random;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -17,10 +16,11 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class InstantDecay extends JavaPlugin implements Listener {
 	private final Random rand = new Random();
-	private static boolean disabled = false;
+	private boolean disabled = false;
 
 	@Override
 	public void onEnable() {
@@ -31,42 +31,35 @@ public class InstantDecay extends JavaPlugin implements Listener {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if (!command.testPermissionSilent(sender)) {
-			sender.sendMessage(ChatColor.RED + "You don't have access to this command.");
-			return true;
-		}
-
-		if (command.getLabel().equals("instantdecay")) {
-			if (args.length > 0) {
-				if (args[0].equalsIgnoreCase("disable")) {
-					if (!disabled) {
-						HandlerList.unregisterAll((Plugin) this);
-						disabled = true;
-
-						sender.sendMessage("Plugin has been disabled ! Use /instantdecay enable to enable it back.");
-					} else {
-						sender.sendMessage("Plugin not enabled.");
-					}
-
-					return true;
-				} else if (args[0].equalsIgnoreCase("enable")) {
-					if (disabled) {
-						getServer().getPluginManager().registerEvents(this, this);
-						disabled = false;
-
-						sender.sendMessage("Plugin has been enabled !");
-					} else {
-						sender.sendMessage("Plugin not disabled.");
-					}
-
-					return true;
+		if (args.length > 0) {
+			if (args[0].equalsIgnoreCase("disable")) {
+				if (!disabled) {
+					HandlerList.unregisterAll((Plugin) this);
+					disabled = true;
+	
+					sender.sendMessage("Plugin disabled! Use /instantdecay enable to re-enable.");
+				} else {
+					sender.sendMessage("Plugin already disabled.");
 				}
+	
+				return true;
+			} else if (args[0].equalsIgnoreCase("enable")) {
+				if (disabled) {
+					getServer().getPluginManager().registerEvents(this, this);
+					disabled = false;
+	
+					sender.sendMessage("Plugin enabled! Use /instantdecay disable to disable.");
+				} else {
+					sender.sendMessage("Plugin already enabled.");
+				}
+	
+				return true;
 			}
-
-			sender.sendMessage("Available subcommands:");
-			sender.sendMessage(ChatColor.GRAY + "/instantdecay " + ChatColor.WHITE + "disable" + ChatColor.GRAY + " - turns the plugin off");
-			sender.sendMessage(ChatColor.GRAY + "/instantdecay " + ChatColor.WHITE + "enable" + ChatColor.GRAY + " - re-enables the plugin");
 		}
+
+		sender.sendMessage(ChatColor.GRAY + "Available subcommands:");
+		sender.sendMessage(ChatColor.WHITE + "/instantdecay disable" + ChatColor.GRAY + " - turns the plugin off");
+		sender.sendMessage(ChatColor.WHITE + "/instantdecay enable" + ChatColor.GRAY + " - turns the plugin on");
 
 		return true;
 	}
@@ -79,11 +72,10 @@ public class InstantDecay extends JavaPlugin implements Listener {
 			return;
 		}
 
-		Location loc = block.getLocation();
-		final World world = loc.getWorld();
-		final int x = loc.getBlockX();
-		final int y = loc.getBlockY();
-		final int z = loc.getBlockZ();
+		final World world = block.getWorld();
+		final int x = block.getX();
+		final int y = block.getY();
+		final int z = block.getZ();
 		final int range = 4;
 		final int off = range + 1;
 
@@ -91,8 +83,7 @@ public class InstantDecay extends JavaPlugin implements Listener {
 			return;
 		}
 
-		getServer().getScheduler().runTask(this, new Runnable() {
-			@Override
+		new BukkitRunnable() {
 			public void run() {
 				for (int offX = -range; offX <= range; offX++) {
 					for (int offY = -range; offY <= range; offY++) {
@@ -105,11 +96,12 @@ public class InstantDecay extends JavaPlugin implements Listener {
 					}
 				}
 			}
-		});
+		}.runTask(this);
 	}
 
 	private void breakLeaf(World world, int x, int y, int z) {
 		Block block = world.getBlockAt(x, y, z);
+		block.getState().getData();
 		@SuppressWarnings("deprecation")
 		byte data = block.getData();
 
