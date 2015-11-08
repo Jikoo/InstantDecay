@@ -1,6 +1,6 @@
 name: InstantDecay
 description: Leaves decay instantly
-version: 1.4
+version: 1.4.1
 author: Digi
 main: digi.instantDecay.InstantDecay
 

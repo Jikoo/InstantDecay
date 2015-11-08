@@ -14,11 +14,11 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class InstantDecay extends JavaPlugin implements Listener {
+
 	private final Random rand = new Random();
 	private boolean disabled = false;
 
@@ -34,25 +34,25 @@ public class InstantDecay extends JavaPlugin implements Listener {
 		if (args.length > 0) {
 			if (args[0].equalsIgnoreCase("disable")) {
 				if (!disabled) {
-					HandlerList.unregisterAll((Plugin) this);
+					HandlerList.unregisterAll((JavaPlugin) this);
 					disabled = true;
-	
+
 					sender.sendMessage("Plugin disabled! Use /instantdecay enable to re-enable.");
 				} else {
 					sender.sendMessage("Plugin already disabled.");
 				}
-	
+
 				return true;
 			} else if (args[0].equalsIgnoreCase("enable")) {
 				if (disabled) {
 					getServer().getPluginManager().registerEvents(this, this);
 					disabled = false;
-	
+
 					sender.sendMessage("Plugin enabled! Use /instantdecay disable to disable.");
 				} else {
 					sender.sendMessage("Plugin already enabled.");
 				}
-	
+
 				return true;
 			}
 		}
@@ -101,11 +101,8 @@ public class InstantDecay extends JavaPlugin implements Listener {
 
 	private void breakLeaf(World world, int x, int y, int z) {
 		Block block = world.getBlockAt(x, y, z);
-		block.getState().getData();
-		@SuppressWarnings("deprecation")
-		byte data = block.getData();
 
-		if ((data & 4) == 4) {
+		if ((block.getData() & 4) == 4) {
 			return; // player placed leaf, ignore
 		}
 
@@ -171,7 +168,7 @@ public class InstantDecay extends JavaPlugin implements Listener {
 
 			block.breakNaturally();
 
-			if (10 > rand.nextInt(100)) {
+			if (rand.nextInt(10) == 0) {
 				world.playEffect(block.getLocation(), Effect.STEP_SOUND, Material.LEAVES);
 			}
 		}
