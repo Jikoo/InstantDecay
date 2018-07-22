@@ -1,8 +1,9 @@
 name: InstantDecay
 description: Leaves decay instantly
-version: 1.4.1
+version: ${project.version}
 author: Digi
 main: digi.instantDecay.InstantDecay
+api-version: 1.13
 
 commands:
   instantdecay:

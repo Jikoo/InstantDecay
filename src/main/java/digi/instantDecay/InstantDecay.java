@@ -7,6 +7,8 @@ import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Leaves;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
@@ -32,27 +34,22 @@ public class InstantDecay extends JavaPlugin implements Listener {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (args.length > 0) {
+
 			if (args[0].equalsIgnoreCase("disable")) {
 				if (!disabled) {
 					HandlerList.unregisterAll((JavaPlugin) this);
 					disabled = true;
-
-					sender.sendMessage("Plugin disabled! Use /instantdecay enable to re-enable.");
-				} else {
-					sender.sendMessage("Plugin already disabled.");
 				}
-
+				sender.sendMessage("InstantDecay is disabled! Use /instantdecay enable to re-enable.");
 				return true;
-			} else if (args[0].equalsIgnoreCase("enable")) {
+			}
+
+			if (args[0].equalsIgnoreCase("enable")) {
 				if (disabled) {
 					getServer().getPluginManager().registerEvents(this, this);
 					disabled = false;
-
-					sender.sendMessage("Plugin enabled! Use /instantdecay disable to disable.");
-				} else {
-					sender.sendMessage("Plugin already enabled.");
 				}
-
+				sender.sendMessage("InstantDecay is enabled! Use /instantdecay disable to disable.");
 				return true;
 			}
 		}
@@ -68,7 +65,8 @@ public class InstantDecay extends JavaPlugin implements Listener {
 	public void blockBreakEvent(BlockBreakEvent event) {
 		Block block = event.getBlock();
 
-		if (block.getType() != Material.LOG && block.getType() != Material.LOG_2) {
+		String materialName = event.getBlock().getType().name();
+		if (!materialName.endsWith("LOG") && !materialName.endsWith("LEAVES")) {
 			return;
 		}
 
@@ -88,9 +86,26 @@ public class InstantDecay extends JavaPlugin implements Listener {
 				for (int offX = -range; offX <= range; offX++) {
 					for (int offY = -range; offY <= range; offY++) {
 						for (int offZ = -range; offZ <= range; offZ++) {
-							Material m = world.getBlockAt(x + offX, y + offY, z + offZ).getType();
-							if (m == Material.LEAVES || m == Material.LEAVES_2) {
-								breakLeaf(world, x + offX, y + offY, z + offZ);
+							Block blockLeaves = world.getBlockAt(x + offX, y + offY, z + offZ);
+							BlockData data = blockLeaves.getBlockData();
+							if (!(data instanceof Leaves)) {
+								continue;
+							}
+							Leaves leaves = (Leaves) data;
+							if (leaves.isPersistent() || leaves.getDistance() < 7) {
+								continue;
+							}
+							LeavesDecayEvent event = new LeavesDecayEvent(blockLeaves);
+							getServer().getPluginManager().callEvent(event);
+
+							if (event.isCancelled()) {
+								return;
+							}
+
+							blockLeaves.breakNaturally();
+
+							if (rand.nextInt(10) == 0) {
+								world.playEffect(blockLeaves.getLocation(), Effect.STEP_SOUND, Material.OAK_LEAVES);
 							}
 						}
 					}
@@ -99,82 +114,7 @@ public class InstantDecay extends JavaPlugin implements Listener {
 		}.runTask(this);
 	}
 
-	private void breakLeaf(World world, int x, int y, int z) {
-		Block block = world.getBlockAt(x, y, z);
-
-		if ((block.getData() & 4) == 4) {
-			return; // player placed leaf, ignore
-		}
-
-		byte range = 4;
-		byte max = 32;
-		int[] blocks = new int[max * max * max];
-		int off = range + 1;
-		int mul = max * max;
-		int div = max / 2;
-
-		if (validChunk(world, x - off, y - off, z - off, x + off, y + off, z + off)) {
-			int offX;
-			int offY;
-			int offZ;
-			Material type;
-
-			for (offX = -range; offX <= range; offX++) {
-				for (offY = -range; offY <= range; offY++) {
-					for (offZ = -range; offZ <= range; offZ++) {
-						type = world.getBlockAt(x + offX, y + offY, z + offZ).getType();
-						blocks[(offX + div) * mul + (offY + div) * max + offZ + div] = (type == Material.LOG || type == Material.LOG_2 ? 0 : (type == Material.LEAVES || type == Material.LEAVES_2 ? -2 : -1));
-					}
-				}
-			}
-
-			int type1;
-			for (offX = 1; offX <= 4; offX++) {
-				for (offY = -range; offY <= range; offY++) {
-					for (offZ = -range; offZ <= range; offZ++) {
-						for (type1 = -range; type1 <= range; type1++) {
-							if (blocks[(offY + div) * mul + (offZ + div) * max + type1 + div] == offX - 1) {
-								if (blocks[(offY + div - 1) * mul + (offZ + div) * max + type1 + div] == -2)
-									blocks[(offY + div - 1) * mul + (offZ + div) * max + type1 + div] = offX;
-
-								if (blocks[(offY + div + 1) * mul + (offZ + div) * max + type1 + div] == -2)
-									blocks[(offY + div + 1) * mul + (offZ + div) * max + type1 + div] = offX;
-
-								if (blocks[(offY + div) * mul + (offZ + div - 1) * max + type1 + div] == -2)
-									blocks[(offY + div) * mul + (offZ + div - 1) * max + type1 + div] = offX;
-
-								if (blocks[(offY + div) * mul + (offZ + div + 1) * max + type1 + div] == -2)
-									blocks[(offY + div) * mul + (offZ + div + 1) * max + type1 + div] = offX;
-
-								if (blocks[(offY + div) * mul + (offZ + div) * max + (type1 + div - 1)] == -2)
-									blocks[(offY + div) * mul + (offZ + div) * max + (type1 + div - 1)] = offX;
-
-								if (blocks[(offY + div) * mul + (offZ + div) * max + type1 + div + 1] == -2)
-									blocks[(offY + div) * mul + (offZ + div) * max + type1 + div + 1] = offX;
-							}
-						}
-					}
-				}
-			}
-		}
-
-		if (blocks[div * mul + div * max + div] < 0) {
-			LeavesDecayEvent event = new LeavesDecayEvent(block);
-			getServer().getPluginManager().callEvent(event);
-
-			if (event.isCancelled()) {
-				return;
-			}
-
-			block.breakNaturally();
-
-			if (rand.nextInt(10) == 0) {
-				world.playEffect(block.getLocation(), Effect.STEP_SOUND, Material.LEAVES);
-			}
-		}
-	}
-
-	public boolean validChunk(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+	private boolean validChunk(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		if (maxY >= 0 && minY < world.getMaxHeight()) {
 			minX >>= 4;
 			minZ >>= 4;
