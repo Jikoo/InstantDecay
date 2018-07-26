@@ -5,6 +5,7 @@ import java.util.Random;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
@@ -63,13 +64,12 @@ public class InstantDecay extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void blockBreakEvent(BlockBreakEvent event) {
-		Block block = event.getBlock();
 
-		String materialName = event.getBlock().getType().name();
-		if (!materialName.endsWith("LOG") && !materialName.endsWith("LEAVES")) {
+		if (!Tag.LOGS.isTagged(event.getBlock().getType()) && !Tag.LEAVES.isTagged(event.getBlock().getType())) {
 			return;
 		}
 
+		Block block = event.getBlock();
 		final World world = block.getWorld();
 		final int x = block.getX();
 		final int y = block.getY();
