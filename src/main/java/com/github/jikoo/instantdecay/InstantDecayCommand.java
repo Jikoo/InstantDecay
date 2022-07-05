@@ -6,7 +6,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,7 +42,7 @@ public class InstantDecayCommand implements TabExecutor {
 
 			if (args[0].equalsIgnoreCase("disable")) {
 				if (isEnabled.get()) {
-					HandlerList.unregisterAll((Plugin) plugin);
+					HandlerList.unregisterAll(plugin);
 					setEnabled.accept(false);
 				}
 				sender.sendMessage("InstantDecay is disabled! Use /instantdecay enable to re-enable.");
@@ -52,7 +51,7 @@ public class InstantDecayCommand implements TabExecutor {
 
 			if (args[0].equalsIgnoreCase("enable")) {
 				if (!isEnabled.get()) {
-					plugin.getServer().getPluginManager().registerEvents(plugin, plugin);
+					plugin.getServer().getPluginManager().registerEvents(new DecayListener(plugin), plugin);
 					setEnabled.accept(true);
 				}
 				sender.sendMessage("InstantDecay is enabled! Use /instantdecay disable to disable.");
