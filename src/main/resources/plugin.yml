@@ -3,7 +3,7 @@ description: Leaves decay instantly
 version: ${project.version}
 author: Digi
 main: digi.instantDecay.InstantDecay
-api-version: 1.13
+api-version: 1.18
 
 commands:
   instantdecay:

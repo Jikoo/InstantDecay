@@ -88,10 +88,9 @@ public class InstantDecay extends JavaPlugin implements Listener {
 						for (int offZ = -range; offZ <= range; offZ++) {
 							Block blockLeaves = world.getBlockAt(x + offX, y + offY, z + offZ);
 							BlockData data = blockLeaves.getBlockData();
-							if (!(data instanceof Leaves)) {
+							if (!(data instanceof Leaves leaves)) {
 								continue;
 							}
-							Leaves leaves = (Leaves) data;
 							if (leaves.isPersistent() || leaves.getDistance() < 7) {
 								continue;
 							}
@@ -115,23 +114,23 @@ public class InstantDecay extends JavaPlugin implements Listener {
 	}
 
 	private boolean validChunk(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-		if (maxY >= 0 && minY < world.getMaxHeight()) {
-			minX >>= 4;
-			minZ >>= 4;
-			maxX >>= 4;
-			maxZ >>= 4;
-
-			for (int x = minX; x <= maxX; x++) {
-				for (int z = minZ; z <= maxZ; z++) {
-					if (!world.isChunkLoaded(x, z)) {
-						return false;
-					}
-				}
-			}
-
-			return true;
+		if (maxY < world.getMinHeight() || minY > world.getMaxHeight()) {
+			return false;
 		}
 
-		return false;
+		minX >>= 4;
+		minZ >>= 4;
+		maxX >>= 4;
+		maxZ >>= 4;
+
+		for (int x = minX; x <= maxX; x++) {
+			for (int z = minZ; z <= maxZ; z++) {
+				if (!world.isChunkLoaded(x, z)) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 }
