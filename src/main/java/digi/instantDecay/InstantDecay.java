@@ -1,7 +1,5 @@
 package digi.instantDecay;
 
-import java.util.Random;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Material;
@@ -18,7 +16,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Random;
 
 public class InstantDecay extends JavaPlugin implements Listener {
 
@@ -33,7 +33,11 @@ public class InstantDecay extends JavaPlugin implements Listener {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+	public boolean onCommand(
+			@NotNull CommandSender sender,
+			@NotNull Command command,
+			@NotNull String label,
+			@NotNull String @NotNull [] args) {
 		if (args.length > 0) {
 
 			if (args[0].equalsIgnoreCase("disable")) {
@@ -63,7 +67,7 @@ public class InstantDecay extends JavaPlugin implements Listener {
 	}
 
 	@EventHandler
-	public void blockBreakEvent(BlockBreakEvent event) {
+	public void blockBreakEvent(@NotNull BlockBreakEvent event) {
 
 		if (!Tag.LOGS.isTagged(event.getBlock().getType()) && !Tag.LEAVES.isTagged(event.getBlock().getType())) {
 			return;
@@ -81,39 +85,39 @@ public class InstantDecay extends JavaPlugin implements Listener {
 			return;
 		}
 
-		new BukkitRunnable() {
-			public void run() {
-				for (int offX = -range; offX <= range; offX++) {
-					for (int offY = -range; offY <= range; offY++) {
-						for (int offZ = -range; offZ <= range; offZ++) {
-							Block blockLeaves = world.getBlockAt(x + offX, y + offY, z + offZ);
-							BlockData data = blockLeaves.getBlockData();
-							if (!(data instanceof Leaves leaves)) {
-								continue;
-							}
-							if (leaves.isPersistent() || leaves.getDistance() < 7) {
-								continue;
-							}
-							LeavesDecayEvent event = new LeavesDecayEvent(blockLeaves);
-							getServer().getPluginManager().callEvent(event);
+		getServer().getScheduler().runTaskLater(this, () -> decayLeavesAround(world, x, y, z, range), 1L);
+	}
 
-							if (event.isCancelled()) {
-								return;
-							}
+	public void decayLeavesAround(@NotNull World world, int x, int y, int z, int range) {
+		for (int offX = -range; offX <= range; offX++) {
+			for (int offY = -range; offY <= range; offY++) {
+				for (int offZ = -range; offZ <= range; offZ++) {
+					Block blockLeaves = world.getBlockAt(x + offX, y + offY, z + offZ);
+					BlockData data = blockLeaves.getBlockData();
+					if (!(data instanceof Leaves leaves)) {
+						continue;
+					}
+					if (leaves.isPersistent() || leaves.getDistance() < 7) {
+						continue;
+					}
+					LeavesDecayEvent event = new LeavesDecayEvent(blockLeaves);
+					getServer().getPluginManager().callEvent(event);
 
-							blockLeaves.breakNaturally();
+					if (event.isCancelled()) {
+						return;
+					}
 
-							if (rand.nextInt(10) == 0) {
-								world.playEffect(blockLeaves.getLocation(), Effect.STEP_SOUND, Material.OAK_LEAVES);
-							}
-						}
+					blockLeaves.breakNaturally();
+
+					if (rand.nextInt(10) == 0) {
+						world.playEffect(blockLeaves.getLocation(), Effect.STEP_SOUND, Material.OAK_LEAVES);
 					}
 				}
 			}
-		}.runTask(this);
+		}
 	}
 
-	private boolean validChunk(World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+	private boolean validChunk(@NotNull World world, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		if (maxY < world.getMinHeight() || minY > world.getMaxHeight()) {
 			return false;
 		}
