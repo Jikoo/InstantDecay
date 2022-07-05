@@ -1,6 +1,6 @@
 package digi.instantDecay;
 
-import org.bukkit.ChatColor;
+import com.github.jikoo.instantdecay.InstantDecayCommand;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -8,10 +8,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Leaves;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
@@ -23,47 +20,18 @@ import java.util.Random;
 public class InstantDecay extends JavaPlugin implements Listener {
 
 	private final Random rand = new Random();
-	private boolean disabled = false;
+	private boolean enabled = true;
 
 	@Override
 	public void onEnable() {
-		if (!disabled) {
+		var command = getCommand("instantdecay");
+		if (command != null) {
+			command.setExecutor(new InstantDecayCommand(this, () -> enabled, enabled -> this.enabled = enabled));
+		}
+
+		if (enabled) {
 			getServer().getPluginManager().registerEvents(this, this);
 		}
-	}
-
-	@Override
-	public boolean onCommand(
-			@NotNull CommandSender sender,
-			@NotNull Command command,
-			@NotNull String label,
-			@NotNull String @NotNull [] args) {
-		if (args.length > 0) {
-
-			if (args[0].equalsIgnoreCase("disable")) {
-				if (!disabled) {
-					HandlerList.unregisterAll((JavaPlugin) this);
-					disabled = true;
-				}
-				sender.sendMessage("InstantDecay is disabled! Use /instantdecay enable to re-enable.");
-				return true;
-			}
-
-			if (args[0].equalsIgnoreCase("enable")) {
-				if (disabled) {
-					getServer().getPluginManager().registerEvents(this, this);
-					disabled = false;
-				}
-				sender.sendMessage("InstantDecay is enabled! Use /instantdecay disable to disable.");
-				return true;
-			}
-		}
-
-		sender.sendMessage(ChatColor.GRAY + "Available subcommands:");
-		sender.sendMessage(ChatColor.WHITE + "/instantdecay disable" + ChatColor.GRAY + " - turns the plugin off");
-		sender.sendMessage(ChatColor.WHITE + "/instantdecay enable" + ChatColor.GRAY + " - turns the plugin on");
-
-		return true;
 	}
 
 	@EventHandler
