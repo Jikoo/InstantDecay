@@ -1,10 +1,8 @@
-package digi.instantDecay;
+package com.github.jikoo.instantdecay;
 
-import com.github.jikoo.instantdecay.DecayListener;
-import com.github.jikoo.instantdecay.InstantDecayCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class InstantDecay extends JavaPlugin {
+public class InstantDecayPlugin extends JavaPlugin {
 
 	private boolean enabled = true;
 

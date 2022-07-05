@@ -1,8 +1,8 @@
 name: InstantDecay
 description: Leaves decay instantly
 version: ${project.version}
-author: Digi
-main: digi.instantDecay.InstantDecay
+authors: [ Jikoo, Digi ]
+main: com.github.jikoo.instantdecay.InstantDecayPlugin
 api-version: 1.18
 
 commands:

@@ -1,11 +1,11 @@
 package com.github.jikoo.instantdecay;
 
-import digi.instantDecay.InstantDecay;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,13 +18,13 @@ import java.util.function.Supplier;
 public class InstantDecayCommand implements TabExecutor {
 
 	private final List<String> subcommands = List.of("disable", "enable");
-	private final @NotNull InstantDecay plugin;
+	private final @NotNull Plugin plugin;
 	private final @NotNull Supplier<Boolean> isEnabled;
 	private final @NotNull Consumer<Boolean> setEnabled;
 
 
 	public InstantDecayCommand(
-			@NotNull InstantDecay plugin,
+			@NotNull Plugin plugin,
 			@NotNull Supplier<Boolean> isEnabled,
 			@NotNull Consumer<Boolean> setEnabled) {
 		this.plugin = plugin;
@@ -60,8 +60,8 @@ public class InstantDecayCommand implements TabExecutor {
 		}
 
 		sender.sendMessage(ChatColor.GRAY + "Available subcommands:");
-		sender.sendMessage(ChatColor.WHITE + "/instantdecay disable" + ChatColor.GRAY + " - turns the plugin off");
-		sender.sendMessage(ChatColor.WHITE + "/instantdecay enable" + ChatColor.GRAY + " - turns the plugin on");
+		sender.sendMessage(ChatColor.WHITE + "/instantdecay disable" + ChatColor.GRAY + " - turn the plugin off");
+		sender.sendMessage(ChatColor.WHITE + "/instantdecay enable" + ChatColor.GRAY + " - turn the plugin on");
 
 		return true;
 	}
