@@ -36,7 +36,7 @@ public class DecayListener implements Listener {
 			return;
 		}
 
-		plugin.getServer().getScheduler().runTaskLater(plugin, () -> decayLeavesAround(block), 1L);
+		plugin.getServer().getScheduler().runTaskLater(plugin, () -> decayLeavesAround(block), 10L);
 	}
 
 	private void decayLeavesAround(@NotNull Block block) {
@@ -95,16 +95,16 @@ public class DecayListener implements Listener {
 			return;
 		}
 
-		Location location = block.getLocation();
-		block.getWorld().spawnParticle(Particle.BLOCK_CRACK, location, 1, material);
+		Location location = block.getLocation().add(0.5, 0.5, 0.5);
+		block.getWorld().spawnParticle(Particle.BLOCK_CRACK, location, 3, data);
 
-		if (random.nextInt(10) == 0) {
+		if (random.nextInt(5) == 0) {
 			block.getWorld().playSound(location, getSound(material), SoundCategory.BLOCKS, 1F, 1F);
 		}
 	}
 
 	private boolean isDecayPrevented(@NotNull Block block, @NotNull Leaves leaves) {
-		if (leaves.isPersistent() || leaves.getDistance() <= 7) {
+		if (leaves.isPersistent() || leaves.getDistance() < 7) {
 			return true;
 		}
 

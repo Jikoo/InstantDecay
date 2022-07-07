@@ -3,7 +3,7 @@
 
   <groupId>InstantDecay</groupId>
   <artifactId>InstantDecay</artifactId>
-  <version>2.0.0</version>
+  <version>2.0.1</version>
 
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
